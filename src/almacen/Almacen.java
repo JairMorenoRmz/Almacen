@@ -1,13 +1,21 @@
 package almacen;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class Almacen {
     private Connection conn;
     private Statement stmt;
+    private static final Logger logger = Logger.getLogger(Almacen.class.getName());
 
     public Almacen(Connection conn) {
         this.conn = conn;
@@ -21,8 +29,9 @@ public class Almacen {
                     "fecha TEXT," +
                     "tipo TEXT)";
             stmt.execute(createInventarioTable);
+            logger.info("Tabla de inventario creada o existente verificada.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error creando tabla de inventario", e);
         }
     }
 
@@ -30,6 +39,7 @@ public class Almacen {
         String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         try {
             conn.setAutoCommit(false); 
+            logger.info("Iniciando transacción para entrada de producto.");
             String insertProducto = "INSERT INTO inventario (producto, peso, ubicacion, fecha, tipo) VALUES (?, ?, ?, ?, 'entrada')";
             try (PreparedStatement pstmt = conn.prepareStatement(insertProducto)) {
                 for (Double peso : pesos) {
@@ -40,11 +50,13 @@ public class Almacen {
                     pstmt.executeUpdate();
                 }
             }
-            conn.commit();
+            conn.commit(); 
+            logger.info("Transacción de entrada de producto confirmada.");
             System.out.println("Entrada: " + pesos.size() + " unidades de " + producto + " en " + ubicacion + ". Fecha: " + fecha);
         } catch (SQLException e) {
             try {
                 conn.rollback(); 
+                logger.warning("Transacción revertida debido a un error.");
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -52,6 +64,7 @@ public class Almacen {
         } finally {
             try {
                 conn.setAutoCommit(true); 
+                logger.info("Modo autocommit restaurado.");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -61,6 +74,7 @@ public class Almacen {
     public void salidaProducto(String producto, ArrayList<Double> pesos, String ubicacion) {
         try {
             conn.setAutoCommit(false); 
+            logger.info("Iniciando transacción para salida de producto.");
             for (Double peso : pesos) {
                 String query = "SELECT id, peso FROM inventario WHERE producto = ? AND ubicacion = ? AND tipo = 'entrada' ORDER BY fecha";
                 try (PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -83,31 +97,35 @@ public class Almacen {
                             pstmtDelete.setInt(1, id);
                             pstmtDelete.executeUpdate();
                         }
+                        logger.info("Producto salido correctamente.");
                         System.out.println("Salida: " + producto + " en " + ubicacion + ". Fecha: " + fecha);
                     } else {
                         System.out.println("No hay suficiente " + producto + " en inventario en " + ubicacion + " para la salida solicitada.");
+                        logger.warning("No hay suficiente inventario para la salida solicitada.");
                     }
                 }
             }
             conn.commit(); 
+            logger.info("Transacción de salida de producto confirmada.");
         } catch (SQLException e) {
             try {
-                conn.rollback();
+                conn.rollback(); 
+                logger.warning("Transacción revertida debido a un error.");
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
             e.printStackTrace();
         } finally {
             try {
-                conn.setAutoCommit(true);
+                conn.setAutoCommit(true); 
+                logger.info("Modo autocommit restaurado.");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void mostrarInventario() {
-        System.out.println("\nInventario actual:");
+    public void mostrarInventarioToString(StringBuilder sb) {
         String query = "SELECT producto, ubicacion, COUNT(*), SUM(peso), MAX(fecha) FROM inventario WHERE tipo = 'entrada' GROUP BY producto, ubicacion ORDER BY ubicacion";
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -116,8 +134,8 @@ public class Almacen {
                 int cantidad = rs.getInt(3);
                 double totalPeso = rs.getDouble(4);
                 String fecha = rs.getString(5);
-                System.out.println("Ubicación: " + ubicacion);
-                System.out.println("  " + producto + ": " + cantidad + " unidades, " + totalPeso + " kg, Última entrada: " + fecha);
+                sb.append("Ubicación: ").append(ubicacion).append("\n");
+                sb.append("  ").append(producto).append(": ").append(cantidad).append(" unidades, ").append(totalPeso).append(" kg, Última entrada: ").append(fecha).append("\n");
 
                 String subQuery = "SELECT peso, fecha FROM inventario WHERE producto = ? AND ubicacion = ? AND tipo = 'entrada'";
                 try (PreparedStatement pstmt = conn.prepareStatement(subQuery)) {
@@ -125,27 +143,26 @@ public class Almacen {
                     pstmt.setString(2, ubicacion);
                     try (ResultSet pesosFechas = pstmt.executeQuery()) {
                         while (pesosFechas.next()) {
-                            System.out.println("  Peso: " + pesosFechas.getDouble("peso") + " kg, Fecha: " + pesosFechas.getString("fecha"));
+                            sb.append("    Peso: ").append(pesosFechas.getDouble("peso")).append(" kg, Fecha: ").append(pesosFechas.getString("fecha")).append("\n");
                         }
                     }
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error mostrando inventario", e);
         }
     }
 
-    public void mostrarHistorial() {
-        System.out.println("\nHistorial de Entradas y Salidas:");
+    public void mostrarHistorialToString(StringBuilder sb) {
         String query = "SELECT id, producto, peso, ubicacion, fecha, tipo FROM inventario";
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("id") + " | " + rs.getString("tipo").toUpperCase() + ": " +
-                        rs.getString("producto") + ", " + rs.getDouble("peso") + " kg, Ubicación: " + rs.getString("ubicacion") +
-                        ", Fecha: " + rs.getString("fecha"));
+                sb.append("ID: ").append(rs.getInt("id")).append(" | ").append(rs.getString("tipo").toUpperCase()).append(": ")
+                        .append(rs.getString("producto")).append(", ").append(rs.getDouble("peso")).append(" kg, Ubicación: ").append(rs.getString("ubicacion"))
+                        .append(", Fecha: ").append(rs.getString("fecha")).append("\n");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error mostrando historial", e);
         }
     }
 
@@ -173,3 +190,4 @@ public class Almacen {
         }
     }
 }
+
