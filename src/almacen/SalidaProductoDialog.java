@@ -1,78 +1,71 @@
 package almacen;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class SalidaProductoDialog extends JDialog {
     private JTextField productoField;
     private JTextField pesoField;
-    private JTextField ubicacionField;
-    private JButton addButton;
-    private JButton doneButton;
-    private ArrayList<Double> pesos;
+    private JComboBox<String> ubicacionComboBox;
+    private Almacen almacen;
 
     public SalidaProductoDialog(JFrame parent, Almacen almacen) {
         super(parent, "Salida de Producto", true);
-        setLayout(null);
-        setSize(400, 300);
-        setLocationRelativeTo(parent);
+        this.almacen = almacen;
 
-        JLabel productoLabel = new JLabel("Producto:");
-        productoLabel.setBounds(10, 10, 80, 25);
-        add(productoLabel);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("Producto:"), gbc);
+
+        gbc.gridx = 1;
         productoField = new JTextField(20);
-        productoField.setBounds(100, 10, 260, 25);
-        add(productoField);
+        productoField.setPreferredSize(new Dimension(200, 30));
+        add(productoField, gbc);
 
-        JLabel pesoLabel = new JLabel("Peso:");
-        pesoLabel.setBounds(10, 40, 80, 25);
-        add(pesoLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Peso:"), gbc);
 
+        gbc.gridx = 1;
         pesoField = new JTextField(20);
-        pesoField.setBounds(100, 40, 260, 25);
-        add(pesoField);
+        pesoField.setPreferredSize(new Dimension(200, 30));
+        add(pesoField, gbc);
 
-        JLabel ubicacionLabel = new JLabel("Ubicación:");
-        ubicacionLabel.setBounds(10, 70, 80, 25);
-        add(ubicacionLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("Ubicación:"), gbc);
 
-        ubicacionField = new JTextField(20);
-        ubicacionField.setBounds(100, 70, 260, 25);
-        add(ubicacionField);
+        gbc.gridx = 1;
+        ubicacionComboBox = new JComboBox<>(new String[]{"Planta 1 - Almacén Central", "Planta 1 - Almacén Intermedio", "Planta 1 - Almacén Temporal", "Planta 2 - Almacén Único"});
+        ubicacionComboBox.setPreferredSize(new Dimension(200, 30));
+        add(ubicacionComboBox, gbc);
 
-        addButton = new JButton("Agregar");
-        addButton.setBounds(100, 110, 120, 25);
-        add(addButton);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JButton salidaButton = new JButton("Registrar Salida");
+        salidaButton.setPreferredSize(new Dimension(200, 40));
+        add(salidaButton, gbc);
 
-        doneButton = new JButton("Hecho");
-        doneButton.setBounds(240, 110, 120, 25);
-        add(doneButton);
-
-        pesos = new ArrayList<>();
-
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                double peso = Double.parseDouble(pesoField.getText());
-                pesos.add(peso);
-                pesoField.setText("");
-                JOptionPane.showMessageDialog(SalidaProductoDialog.this, "Peso agregado.");
-            }
-        });
-
-        doneButton.addActionListener(new ActionListener() {
+        salidaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String producto = productoField.getText();
-                String ubicacion = ubicacionField.getText();
-                almacen.salidaProducto(producto, pesos, ubicacion);
-                JOptionPane.showMessageDialog(SalidaProductoDialog.this, "Producto retirado del almacén.");
+                double peso = Double.parseDouble(pesoField.getText());
+                String ubicacion = (String) ubicacionComboBox.getSelectedItem();
+                almacen.salidaProducto(producto, peso, ubicacion);
                 dispose();
             }
         });
+
+        setSize(400, 300);
+        setLocationRelativeTo(parent);
     }
 }
-

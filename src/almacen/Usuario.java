@@ -1,40 +1,12 @@
 package almacen;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class Usuario {
     private Connection conn;
 
     public Usuario(Connection conn) {
         this.conn = conn;
-        try {
-            Statement stmt = conn.createStatement();
-            String createUsuariosTable = "CREATE TABLE IF NOT EXISTS usuarios (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "username TEXT UNIQUE," +
-                    "password TEXT," +
-                    "rol TEXT)";
-            stmt.execute(createUsuariosTable);
-            crearUsuarioInicial(stmt);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void crearUsuarioInicial(Statement stmt) {
-        try {
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM usuarios");
-            if (rs.next() && rs.getInt(1) == 0) {
-                crearUsuario("admin", "admin123", "admin");
-                System.out.println("Usuario administrador por defecto creado: admin / admin123");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public void crearUsuario(String username, String password, String rol) {
@@ -47,6 +19,21 @@ public class Usuario {
             System.out.println("Usuario " + username + " creado con éxito.");
         } catch (SQLException e) {
             System.out.println("El nombre de usuario ya existe. Intenta con otro nombre de usuario.");
+        }
+    }
+
+    public void eliminarUsuario(String username) {
+        String deleteUser = "DELETE FROM usuarios WHERE username = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(deleteUser)) {
+            pstmt.setString(1, username);
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Usuario " + username + " eliminado con éxito.");
+            } else {
+                System.out.println("Usuario " + username + " no encontrado.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -66,4 +53,3 @@ public class Usuario {
         return null;
     }
 }
-

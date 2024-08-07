@@ -1,6 +1,7 @@
 package almacen;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -8,52 +9,63 @@ public class CrearUsuarioDialog extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JComboBox<String> rolComboBox;
-    private JButton createButton;
+    private Usuario usuario;
 
     public CrearUsuarioDialog(JFrame parent, Usuario usuario) {
         super(parent, "Crear Usuario", true);
-        setLayout(null);
-        setSize(300, 200);
-        setLocationRelativeTo(parent);
+        this.usuario = usuario;
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setBounds(10, 10, 80, 25);
-        add(usernameLabel);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("Username:"), gbc);
+
+        gbc.gridx = 1;
         usernameField = new JTextField(20);
-        usernameField.setBounds(100, 10, 160, 25);
-        add(usernameField);
+        usernameField.setPreferredSize(new Dimension(200, 30));
+        add(usernameField, gbc);
 
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setBounds(10, 40, 80, 25);
-        add(passwordLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Password:"), gbc);
 
+        gbc.gridx = 1;
         passwordField = new JPasswordField(20);
-        passwordField.setBounds(100, 40, 160, 25);
-        add(passwordField);
+        passwordField.setPreferredSize(new Dimension(200, 30));
+        add(passwordField, gbc);
 
-        JLabel rolLabel = new JLabel("Rol:");
-        rolLabel.setBounds(10, 70, 80, 25);
-        add(rolLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("Rol:"), gbc);
 
+        gbc.gridx = 1;
         rolComboBox = new JComboBox<>(new String[]{"admin", "planta1", "planta2", "visualizador"});
-        rolComboBox.setBounds(100, 70, 160, 25);
-        add(rolComboBox);
+        rolComboBox.setPreferredSize(new Dimension(200, 30));
+        add(rolComboBox, gbc);
 
-        createButton = new JButton("Crear");
-        createButton.setBounds(100, 110, 80, 25);
-        add(createButton);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JButton crearButton = new JButton("Crear");
+        crearButton.setPreferredSize(new Dimension(200, 40));
+        add(crearButton, gbc);
 
-        createButton.addActionListener(new ActionListener() {
+        crearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
                 String rol = (String) rolComboBox.getSelectedItem();
                 usuario.crearUsuario(username, password, rol);
-                JOptionPane.showMessageDialog(CrearUsuarioDialog.this, "Usuario creado con éxito.");
                 dispose();
             }
         });
+
+        setSize(400, 300);
+        setLocationRelativeTo(parent);
     }
 }
