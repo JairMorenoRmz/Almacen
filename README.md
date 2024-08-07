@@ -5,13 +5,32 @@
 a.- El sistema de inventarios en Almacén es una aplicación diseñada para gestionar eficientemente el inventario de productos en un almacén. La aplicación permite registrar las entradas y salidas de productos, gestionar usuarios con diferentes roles y proporcionar una interfaz gráfica amigable para facilitar estas operaciones.
 
 b.- Problema identificado.
-La gestión manual del inventario en un almacén puede ser propensa a errores y consume mucho tiempo. Además, la falta de control sobre quién puede modificar el inventario puede llevar a problemas de seguridad y pérdidas.
+•	Errores en el Inventario: Debido a la gestión manual, hay errores frecuentes en el registro de entradas y salidas de materiales.
+•	Falta de Visibilidad: La falta de un sistema en tiempo real dificulta la toma de decisiones informadas y rápidas.
+•	Retrasos en la Producción: La falta de materiales críticos no identificados a tiempo causa paradas en la producción.
+•	Gestión de Facturas: El proceso manual de facturación es lento y propenso a errores.
 
 c.- Solución.
 La aplicación proporciona una solución integral que automatiza la gestión del inventario, permitiendo registrar y consultar entradas y salidas de productos de manera eficiente. También incorpora roles de usuario para asegurar que solo usuarios autorizados puedan realizar ciertas operaciones.
 
 d.- Arquitectura.
 La aplicación está construida usando Java y SQLite. Utiliza una arquitectura cliente-servidor simple donde el cliente es una aplicación de escritorio que se conecta a una base de datos SQLite. La interfaz gráfica está desarrollada utilizando Swing.
+![image](https://github.com/user-attachments/assets/0c56281e-f2ca-48ec-a1ad-4a61a25f36cf)
+
+1.- Actualización en tiempo real:
+Este apartado significa que cualquier cambio o movimiento en el inventario se va a reflejar inmediatamente en el sistema. Ya sea que el material se recibe o se utiliza en la producción, todos los datos se actualizan instantáneamente para que siempre se llegue a tener la información más reciente.
+2.- Recepción de material:
+Esta parte del bloque gestiona lo que ería la entrada de nuevos materiales al inventario, Esto cuando llega una nueva entrega en el negocio de los plásticos reciclados, ya que registrará detalles como el tipo de material, el peso y la fecha de recepción. Esto con tal de asegurar todo el material que entra en el almacén quede registrado.
+3.- Inventario central:
+Aquí irá toda la información sobre los materiales disponibles, ya que aquí incluye los stocks de mayor flujo tanto para la entrada como la salida, ubicaciones, etc.
+4.- Seguimiento de producción:
+Se encargará de monitorizar el uso de los materiales en los procesos de producción. Cada vez que se utiliza material para fabricar nuevos productos, se registra la cantidad utilizada y se actualiza el inventario en consecuencia.
+5.- Facturación y reportes:
+Sería para generar los documentos necesarios para la administración financiera para los reportes de inventario. Esto incluye los detalles de los materiales vendidos/salidos del almacén y así ofrecer una mejor visión general de las entradas y salidas.
+6.- Movimientos interplantas:
+Gestiona la transferencia de materiales entre diferentes plantas o ubicaciones dentro de la empresa para así saber si se va a mover material del almacén central a otro almacén temporal o al almacén de planta 2.
+
+
 
 - Tabla de Contenidos. (ToC)
 1. Resumen Ejecutivo (1-resumen-ejecutivo)
